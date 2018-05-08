@@ -1,18 +1,78 @@
-# the compiler: gcc for C program, define as g++ for C++
+# The compiler: gcc for C program, define as g++ for C++
+NAME := LinuxShell
+CPP := g++
 CC = gcc
 
-# compiler flags:
-#  -g    adds debugging information to the executable file
-#  -Wall turns on most, but not all, compiler warnings
-CFLAGS  = -g -Wall
+OBJDUMP := objdump
+OBJ_DIR := obj
+GIT_VERSION := $(shell git describe --abbrev=4 --dirty --always --tags)
+PRODUCT := "BC-linux-shell"
 
-# the build target executable:
-TARGET = LinuxShell \
+# Put in our include file locations
+INCLUDES= \
+	"-I./"== \
 
-all: $(TARGET)
+# Our c file sources
+C_SOURCES= \
+	LinuxShell.c \
 
-$(TARGET): $(TARGET).c
-  $(CC) $(CFLAGS) -o $(TARGET) $(TARGET).c
+# Our c++ files
+CPP_SOURCES= \
+
+# Flags not enabled by Wall
+COMMON_FLAGS := -Wno-write-strings -O0 - Wall -Wextra -g \
+		-Wno-missing-field-initalizers -fPIC \
+		-DGIT_VERSION=\"$(GIT_VERSION)\" -DDEV_NAME=\"$(PRODUCT)\" \
+
+CFLAGS := -std=gnull $(COMMON_FLAGS) $(INCLUDES)
+CPPFLAGS := -std=gnu++ll -fno-rtti -fno-exceptions $(COMMON_FLAGS) $(INCLUDES)
+
+all: ${OBJ_DIR} ${NAME}
+
+# No idea how this works, should probably RTFM
+vpath %.c $(sort $(dir $(C_SOURCES)))
+vpath %.cpp $(sort $(dir $(CPP_SOURCES)))
+
+# Create Object File Lists
+CPP_OBJS := $(addprefix ${OBJ_DIR}/,$(notdir $(CPP_SOURCES:%.cpp=%o)))
+C_OBJS := $(addprefix ${OBJ_DIR}/,$(notdir $(C_SOURCES:%.c=%o)))
+
+# Create our object DIRECTORY
+${OBJ_DIR}:
+	mkdir ${OBJ_DIR}
+
+# Pull in dependency info for **existing** .o files
+-include $(C_OBJS:.o=.d)
+-include $(CPP_OBJS:.o=.d)
+
+# NOTE
+# $@ is the file being generated (Could be a phony target)
+# $< is the first prerequisite(usually source file)
+# $^ is all the source files
+
+# Get our Local C files
+${OBJ_DIR}/%.o: %.c
+	mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -MMD -MP -o $A -c $<
+
+# Get our Local C files
+${OBJ_DIR}/%.o: %.c
+	mkdir -p $(dir $@)
+	$(CPP) $(CPPFLAGS) -MMD -MP -o $A -c $<
+
+# Our executable
+${NAME}: $(C_OBJS) $(CPP_OBJS)
+	$(CC) $(CFLAGS) $(CPP_OBJS) $(C_OBJS) -o $@
+
+# Our executable
+${NAME}.tst: $(C_OBJS) $(CPP_OBJS)
+	$(CC) $(CFLAGS) $(CPP_OBJS) $(C_OBJS) -o $@
+
+# Our executable
+${NAME}.lst: ${NAME}
+	${OBJDUMP} -dSt $^ >$@
 
 clean:
-  $(RM) $(TARGET)
+	@rm -rf ${NAME} ${NAME}.lst ${OBJ_DIR}
+
+.PHONY all clean
