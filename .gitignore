@@ -3,6 +3,8 @@
 *.ko
 *.obj
 *.elf
+*.d
+*.out
 
 # Libraries
 *.lib
@@ -22,3 +24,9 @@
 *.x86_64
 *.hex
 *.tags*
+
+#folders
+obj/
+
+#random
+LinuxShell #the executable

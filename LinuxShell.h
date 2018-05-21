@@ -1,7 +1,7 @@
 //	this program runs on a created linux fd image and simulates a simple linux shell
 
-void init(void);
-int get_block(int fd, int blk, char *buf);
+void linux_shell_init(void);
+/*int get_block(int fd, int blk, char *buf);
 int put_block(int fd, int blk, char *buf);
 unsigned long getino(int* device1, char* pathname);
 unsigned long search(MINODE* mip, char* name);
@@ -53,4 +53,4 @@ long my_read(int fd, char *buf, int nbytes);
 long write_file(int fd, char *text, int print);
 long my_write(int fd, char *buf, int nbytes);
 int cat_file(char *pathname);
-long lseek_file(int fd, long newPosition);
+long lseek_file(int fd, long newPosition); */

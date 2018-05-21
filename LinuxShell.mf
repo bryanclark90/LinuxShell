@@ -1,5 +1,5 @@
 # The compiler: gcc for C program, define as g++ for C++
-NAME := LinuxShell
+NAME := LinuxShell.out
 CPP := g++
 CC = gcc
 
@@ -13,19 +13,21 @@ INCLUDES= \
 	"-I./"== \
 
 # Our c file sources
-C_SOURCES= \
-	LinuxShell.c \
+C_SOURCES= 			\
+	LinuxShell.c	\
+	file_system.c 	\
+	Main.c 			\
 
 # Our c++ files
 CPP_SOURCES= \
 
 # Flags not enabled by Wall
-COMMON_FLAGS := -Wno-write-strings -O0 - Wall -Wextra -g \
+COMMON_FLAGS := -Wno-write-strings -O0 -Wall -Wextra -g \
 		-Wno-missing-field-initalizers -fPIC \
 		-DGIT_VERSION=\"$(GIT_VERSION)\" -DDEV_NAME=\"$(PRODUCT)\" \
 
-CFLAGS := -std=gnull $(COMMON_FLAGS) $(INCLUDES)
-CPPFLAGS := -std=gnu++ll -fno-rtti -fno-exceptions $(COMMON_FLAGS) $(INCLUDES)
+CFLAGS := -std=gnu11 $(COMMON_FLAGS) $(INCLUDES)
+CPPFLAGS := -std=gnu++11 -fno-rtti -fno-exceptions $(COMMON_FLAGS) $(INCLUDES)
 
 all: ${OBJ_DIR} ${NAME}
 
@@ -34,8 +36,8 @@ vpath %.c $(sort $(dir $(C_SOURCES)))
 vpath %.cpp $(sort $(dir $(CPP_SOURCES)))
 
 # Create Object File Lists
-CPP_OBJS := $(addprefix ${OBJ_DIR}/,$(notdir $(CPP_SOURCES:%.cpp=%o)))
-C_OBJS := $(addprefix ${OBJ_DIR}/,$(notdir $(C_SOURCES:%.c=%o)))
+CPP_OBJS := $(addprefix ${OBJ_DIR}/,$(notdir $(CPP_SOURCES:%.cpp=%.o)))
+C_OBJS := $(addprefix ${OBJ_DIR}/,$(notdir $(C_SOURCES:%.c=%.o)))
 
 # Create our object DIRECTORY
 ${OBJ_DIR}:
@@ -53,12 +55,12 @@ ${OBJ_DIR}:
 # Get our Local C files
 ${OBJ_DIR}/%.o: %.c
 	mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -MMD -MP -o $A -c $<
+	$(CC) $(CFLAGS) -MMD -MP -o $@ -c $<
 
 # Get our Local C files
 ${OBJ_DIR}/%.o: %.c
 	mkdir -p $(dir $@)
-	$(CPP) $(CPPFLAGS) -MMD -MP -o $A -c $<
+	$(CPP) $(CPPFLAGS) -MMD -MP -o $@ -c $<
 
 # Our executable
 ${NAME}: $(C_OBJS) $(CPP_OBJS)
@@ -75,4 +77,4 @@ ${NAME}.lst: ${NAME}
 clean:
 	@rm -rf ${NAME} ${NAME}.lst ${OBJ_DIR}
 
-.PHONY all clean
+	.PHONY all clean

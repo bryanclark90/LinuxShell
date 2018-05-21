@@ -1,6 +1,9 @@
 #include "LinuxShell.h"
+#include "file_system.h"
 
-int main(int argc, char* argv[])
+int main(void)
 {
+    printf("Welcome, to my linux shell!\n");
 
+    linux_shell_init();
 }

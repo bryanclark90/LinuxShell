@@ -1,37 +1,33 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <unistd.h>
+#include <assert.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <ext2fs/ext2_fs.h>
 #include <libgen.h>
 #include <time.h>
 
-// define shorter TYPES, save typing efforts
-typedef struct ext2_group_desc  GD;
-typedef struct ext2_super_block SUPER;
-typedef struct ext2_inode       INODE;
-typedef struct ext2_dir_entry_2 DIR;    // need this for new version of e2fs
-
-GD    *g_gp;
-SUPER *g_sp;
-INODE *g_ip;
-DIR   *g_dp;
-
+//------------------------------------------------
+//        Magic Number/Macros Definition         |
+//------------------------------------------------
 #define FAILURE    -1
 #define SUCCESS     0
 
 //block size information
-#define BLKSIZE             1024
-#define BLOCK_SIZE          1024
-#define BITS_PER_BLOCK      (8*BLOCK_SIZE)
-#define INODES_PER_BLOCK    (BLOCK_SIZE/sizeof(INODE))
-
+#define BITS_IN_BYTE            8
+#define BLOCK_SIZE              1024
+#define BITS_PER_BLOCK          (BITS_IN_BYTE*BLOCK_SIZE)
+#define INODES_PER_BLOCK        (BLOCK_SIZE/sizeof(INODE))
+#define GET_INODE_BLOCK(x, y)   (((x-1)/BITS_IN_BYTE) + y)
+#define GET_INODE_OFFSET(x)     ((x-1)%BITS_IN_BYTE)
 //char buffer size
 #define SMALL_BUFFER_SIZE   256
 #define LARGE_BUFFER_SIZE   1024
 
 // Block number of EXT2 FS on FD
+#define INVALID_BLOCK      -1
 #define SUPERBLOCK          1
 #define GDBLOCK             2
 #define BBITMAP             3
@@ -51,11 +47,20 @@ DIR   *g_dp;
 #define RUNNING             2
 
 // Table sizes
-#define NMINODES            100
+#define NUM_MINODES         100
 #define NMOUNT              10
 #define NPROC               10
 #define NFD                 10
 #define NOFT                100
+
+//------------------------------------------------
+//             Structure Definitions              |
+//------------------------------------------------
+// define shorter TYPES, save typing efforts
+typedef struct ext2_group_desc  GD;
+typedef struct ext2_super_block SUPER;
+typedef struct ext2_inode       INODE;
+typedef struct ext2_dir_entry_2 DIR;    // need this for new version of e2fs
 
 // Open File Table
 typedef struct oft{
@@ -100,16 +105,23 @@ typedef struct mount{
 }MOUNT;
 
 
-//Globals
-PROC P0;
-PROC P1;
-PROC* g_running;
-PROC* g_readQueue;
-MINODE g_minode[100];
-MINODE* g_root;
-char* device = "mydisk";
-int dev;
-int n = 0, y = 0, w = 0;
+//------------------------------------------------
+//              Globals Definition               |
+//------------------------------------------------
+extern GD    *g_gp;
+extern SUPER *g_sp;
+extern INODE *g_ip;
+extern DIR   *g_dp;
+
+extern PROC P0;
+extern PROC P1;
+extern PROC* g_running;
+extern PROC* g_readQueue;
+extern MINODE g_minode[NUM_MINODES];
+extern MINODE* g_root;
+//char* device = "mydisk";
+extern int dev;
+extern int n, y, w;
 
 //------------------------------------------------
 //              Function Definition              |
